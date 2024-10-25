@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MQTT WebSocket Example</title>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+
+        input,
+        button {
+            margin: 10px;
+            padding: 10px;
+        }
+
+        textarea {
+            width: 80%;
+            height: 100px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>MQTT WebSocket Client</h1>
+    <div>
+        <textarea id="logs" placeholder="Logs will appear here..." readonly></textarea>
+    </div>
+
+    <div>
+        <h3>Publish a Message</h3>
+        <input type="text" id="publishMessage" placeholder="Enter message to publish" />
+        <button onclick="publishMessage()">Publish</button>
+    </div>
+
+    <script>
+        // MQTT Configuration
+        const brokerUrl = 'ws://maqiatto.com:8883';
+        const username = 'pelectrome@gmail.com';
+        const password = 'snb19951717';
+        const topicSub = 'pelectrome@gmail.com/iot1';
+        const topicPub = 'pelectrome@gmail.com/iot2';
+
+        // Connect to the broker
+        const client = mqtt.connect(brokerUrl, {
+            username: username,
+            password: password
+        });
+
+        const logs = document.getElementById('logs');
+
+        // Handle connection
+        client.on('connect', () => {
+            logMessage('Connected to broker');
+            client.subscribe(topicSub, (err) => {
+                if (err) {
+                    logMessage('Subscription error: ' + err.message);
+                } else {
+                    logMessage('Subscribed to topic: ' + topicSub);
+                }
+            });
+        });
+
+        // Handle incoming messages
+        client.on('message', (topic, message) => {
+            logMessage(`Message received on ${topic}: ${message.toString()}`);
+        });
+
+        // Handle errors
+        client.on('error', (err) => {
+            logMessage('Connection error: ' + err.message);
+        });
+
+        // Publish a message
+        function publishMessage() {
+            const msg = document.getElementById('publishMessage').value;
+            if (msg) {
+                client.publish(topicPub, msg, (err) => {
+                    if (err) {
+                        logMessage('Publish error: ' + err.message);
+                    } else {
+                        logMessage(`Published: ${msg} to ${topicPub}`);
+                    }
+                });
+            }
+        }
+
+        // Utility function to log messages
+        function logMessage(message) {
+            logs.value += message + '\n';
+            logs.scrollTop = logs.scrollHeight;
+        }
+    </script>
+
+</body>
+
+</html>
